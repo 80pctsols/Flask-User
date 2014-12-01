@@ -50,7 +50,7 @@ def send_email(recipient, subject, html_message, text_message):
                 recipients=[recipient],
                 html = html_message,
                 body = text_message)
-        sender = threading.Thread(name='mail_sender', target=send_message, args(message,))
+        sender = threading.Thread(name='mail_sender', target=send_message, args=(message,))
         sender.start()
 
     # Print helpful error messages on exceptions
