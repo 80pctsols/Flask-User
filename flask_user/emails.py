@@ -7,7 +7,8 @@
 
 import smtplib
 import socket
-from flask import current_app, render_template
+import threading
+from flask import current_app, render_template, copy_current_request_context
 
 def _render_email(filename, **kwargs):
     # Render subject
@@ -39,14 +40,18 @@ def send_email(recipient, subject, html_message, text_message):
     if not mail_engine:
         raise SendEmailError('Flask-Mail has not been initialized. Initialize Flask-Mail or disable USER_SEND_PASSWORD_CHANGED_EMAIL, USER_SEND_REGISTERED_EMAIL and USER_SEND_USERNAME_CHANGED_EMAIL')
 
-    try:
+    @copy_current_request_context
+    def send_message(msg):
+        mail_engine.send(msg)
 
+    try:
         # Construct Flash-Mail message
         message = Message(subject,
                 recipients=[recipient],
                 html = html_message,
                 body = text_message)
-        mail_engine.send(message)
+        sender = threading.Thread(name='mail_sender', target=send_message, args(message,))
+        sender.start()
 
     # Print helpful error messages on exceptions
     except (socket.gaierror, socket.error) as e:
