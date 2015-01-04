@@ -318,6 +318,10 @@ def register():
     user_manager =  current_app.user_manager
     db_adapter = user_manager.db_adapter
 
+    #automatically redirect user from registration page if logged in
+    if (current_user.is_authenticated()):
+        return redirect(_endpoint_url(user_manager.after_login_endpoint))
+    
     next = request.args.get('next', _endpoint_url(user_manager.after_login_endpoint))
     reg_next = request.args.get('reg_next', _endpoint_url(user_manager.after_register_endpoint))
 
